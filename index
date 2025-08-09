@@ -201,7 +201,7 @@
 
     <script>
         // GASのWebアプリURLを設定（後で実際のURLに変更）
-        const GAS_URL = 'YOUR_GAS_WEB_APP_URL_HERE';
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbyUIzgOERcjNg38qVMWiRlAShaOwSBuJspsvWU8dW_AJuoelOs_XM12MS_xWItXwxo/exec';
         
         document.getElementById('passwordForm').addEventListener('submit', async function(e) {
             e.preventDefault();
