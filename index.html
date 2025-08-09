@@ -201,7 +201,7 @@
 
     <script>
         // GASのWebアプリURLを設定（後で実際のURLに変更）
-        const GAS_URL = 'https://script.google.com/macros/s/AKfycbyUIzgOERcjNg38qVMWiRlAShaOwSBuJspsvWU8dW_AJuoelOs_XM12MS_xWItXwxo/exec';
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbwH-NoO74QBxs8OyN8C3RMKV2V7mKY_sNGqMcc26qd60NwsX90nAyP9AUVdQMR8WwQg/exec';
         
         document.getElementById('passwordForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -223,64 +223,67 @@
             loading.style.display = 'block';
             
             try {
-                // まずGETリクエストでテスト
-                console.log('Testing connection to:', GAS_URL);
+                // JSONPを使用してGASにリクエストを送信（CORS回避）
+                const jsonpUrl = `${GAS_URL}?password=${encodeURIComponent(password)}&callback=handleResponse`;
                 
-                const testResponse = await fetch(GAS_URL, {
-                    method: 'GET',
-                });
+                console.log('Sending JSONP request to:', jsonpUrl);
                 
-                console.log('GET Response status:', testResponse.status);
-                console.log('GET Response ok:', testResponse.ok);
+                // JSONPリクエストを作成
+                const script = document.createElement('script');
+                script.src = jsonpUrl;
                 
-                if (!testResponse.ok) {
-                    throw new Error(`GET request failed: ${testResponse.status}`);
-                }
-                
-                const testData = await testResponse.json();
-                console.log('GET Response data:', testData);
-                
-                // GASにPOSTリクエストを送信
-                console.log('Sending POST request...');
-                const response = await fetch(GAS_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        password: password
-                    })
-                });
-                
-                console.log('POST Response status:', response.status);
-                console.log('POST Response ok:', response.ok);
-                
-                if (!response.ok) {
-                    throw new Error(`POST request failed: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                console.log('POST Response data:', data);
-                
-                if (data.success) {
-                    // 成功時
-                    successMessage.textContent = 'パスワード認証に成功しました！';
-                    successMessage.style.display = 'block';
+                // グローバルコールバック関数を定義
+                window.handleResponse = function(data) {
+                    console.log('JSONP Response data:', data);
                     
-                    // ファイル一覧を表示
-                    displayFiles(data.files);
+                    // スクリプトタグを削除
+                    document.head.removeChild(script);
                     
-                } else {
-                    // 失敗時
-                    errorMessage.textContent = data.message || 'パスワードが正しくありません。';
+                    if (data.success) {
+                        // 成功時
+                        successMessage.textContent = 'パスワード認証に成功しました！';
+                        successMessage.style.display = 'block';
+                        
+                        // ファイル一覧を表示
+                        displayFiles(data.files);
+                        
+                    } else {
+                        // 失敗時
+                        errorMessage.textContent = data.message || 'パスワードが正しくありません。';
+                        errorMessage.style.display = 'block';
+                    }
+                    
+                    // ローディング状態を解除
+                    submitBtn.disabled = false;
+                    buttonText.textContent = '送信';
+                    loading.style.display = 'none';
+                };
+                
+                // エラーハンドリング
+                script.onerror = function() {
+                    console.error('JSONP request failed');
+                    errorMessage.textContent = 'サーバーとの通信に失敗しました。しばらく後でもう一度お試しください。';
                     errorMessage.style.display = 'block';
-                }
+                    
+                    // ローディング状態を解除
+                    submitBtn.disabled = false;
+                    buttonText.textContent = '送信';
+                    loading.style.display = 'none';
+                    
+                    // スクリプトタグを削除
+                    if (script.parentNode) {
+                        document.head.removeChild(script);
+                    }
+                };
+                
+                // スクリプトをDOMに追加してリクエストを実行
+                document.head.appendChild(script);
                 
             } catch (error) {
                 console.error('Error:', error);
                 errorMessage.textContent = 'サーバーとの通信に失敗しました。しばらく後でもう一度お試しください。';
                 errorMessage.style.display = 'block';
-            } finally {
+                
                 // ローディング状態を解除
                 submitBtn.disabled = false;
                 buttonText.textContent = '送信';
