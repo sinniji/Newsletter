@@ -223,7 +223,25 @@
             loading.style.display = 'block';
             
             try {
+                // まずGETリクエストでテスト
+                console.log('Testing connection to:', GAS_URL);
+                
+                const testResponse = await fetch(GAS_URL, {
+                    method: 'GET',
+                });
+                
+                console.log('GET Response status:', testResponse.status);
+                console.log('GET Response ok:', testResponse.ok);
+                
+                if (!testResponse.ok) {
+                    throw new Error(`GET request failed: ${testResponse.status}`);
+                }
+                
+                const testData = await testResponse.json();
+                console.log('GET Response data:', testData);
+                
                 // GASにPOSTリクエストを送信
+                console.log('Sending POST request...');
                 const response = await fetch(GAS_URL, {
                     method: 'POST',
                     headers: {
@@ -234,7 +252,15 @@
                     })
                 });
                 
+                console.log('POST Response status:', response.status);
+                console.log('POST Response ok:', response.ok);
+                
+                if (!response.ok) {
+                    throw new Error(`POST request failed: ${response.status}`);
+                }
+                
                 const data = await response.json();
+                console.log('POST Response data:', data);
                 
                 if (data.success) {
                     // 成功時
