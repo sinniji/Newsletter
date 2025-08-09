@@ -138,7 +138,8 @@
         }
         
         .file-link {
-            display: block;
+            display: flex;
+            align-items: center;
             padding: 15px 20px;
             text-decoration: none;
             color: #333;
@@ -150,9 +151,25 @@
             color: #667eea;
         }
         
+        .file-icon {
+            font-size: 1.5em;
+            margin-right: 12px;
+            color: #dc3545;
+        }
+        
+        .file-info {
+            flex: 1;
+        }
+        
         .file-name {
             font-weight: 500;
             font-size: 1.1em;
+            margin-bottom: 4px;
+        }
+        
+        .file-details {
+            font-size: 0.9em;
+            color: #666;
         }
         
         .spinner {
@@ -194,7 +211,7 @@
         <div class="success" id="successMessage"></div>
         
         <div class="files-container" id="filesContainer">
-            <h2 class="files-title">📄 利用可能なファイル</h2>
+            <h2 class="files-title">📄 利用可能なPDFファイル</h2>
             <ul class="file-list" id="fileList"></ul>
         </div>
     </div>
@@ -315,11 +332,34 @@
                     link.target = '_blank';
                     link.rel = 'noopener noreferrer';
                     
+                    // PDFアイコン
+                    const icon = document.createElement('div');
+                    icon.className = 'file-icon';
+                    icon.textContent = '📄';
+                    
+                    // ファイル情報コンテナ
+                    const fileInfo = document.createElement('div');
+                    fileInfo.className = 'file-info';
+                    
+                    // ファイル名
                     const fileName = document.createElement('div');
                     fileName.className = 'file-name';
                     fileName.textContent = file.name;
                     
-                    link.appendChild(fileName);
+                    // ファイル詳細（サイズと更新日）
+                    const fileDetails = document.createElement('div');
+                    fileDetails.className = 'file-details';
+                    
+                    const updateDate = new Date(file.lastModified);
+                    const formattedDate = updateDate.toLocaleDateString('ja-JP');
+                    fileDetails.textContent = `${file.size} • 更新日: ${formattedDate}`;
+                    
+                    // 要素を組み立て
+                    fileInfo.appendChild(fileName);
+                    fileInfo.appendChild(fileDetails);
+                    
+                    link.appendChild(icon);
+                    link.appendChild(fileInfo);
                     listItem.appendChild(link);
                     fileList.appendChild(listItem);
                 });
@@ -328,7 +368,7 @@
             } else {
                 const listItem = document.createElement('li');
                 listItem.className = 'file-item';
-                listItem.innerHTML = '<div class="file-link">利用可能なファイルがありません。</div>';
+                listItem.innerHTML = '<div class="file-link"><div class="file-icon">📁</div><div class="file-info"><div class="file-name">利用可能なPDFファイルがありません。</div></div></div>';
                 fileList.appendChild(listItem);
                 filesContainer.style.display = 'block';
             }
